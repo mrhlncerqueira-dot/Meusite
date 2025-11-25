@@ -540,8 +540,296 @@
 </script>
 </body>
 </html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Meus Jogos</title>
 
-     
+  <style>
+    :root{
+      --card-bg: #fff;
+      --accent: #3f7bff;
+      --page-pad: 28px;
+    }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+      background: linear-gradient(120deg,#e9f0ff,#f8fafc);
+      color:#17202a;
+      padding:var(--page-pad);
+    }
+
+    /* Row que alinha os game-cards horizontalmente (Preset 2: Balanced) */
+    .games-row {
+      display:flex;
+      gap:20px;                 /* preset 2 */
+      justify-content:center;
+      align-items:stretch;      /* força mesma altura */
+      flex-wrap:wrap;
+      max-width:1200px;
+      margin:0 auto;
+    }
+
+    .game-card {
+      flex:1 1 320px;           /* preset 2: base 320px */
+      max-width:360px;          /* preset 2: max 360px */
+      min-width:260px;
+      display:flex;
+      flex-direction:column;
+      background:var(--card-bg);
+      border-radius:12px;
+      box-shadow: 0 12px 36px rgba(16,24,40,0.06);
+      overflow:hidden;
+    }
+
+    .game-card > h2 {
+      margin:12px 8px;
+      font-size:1.05rem;
+      text-align:center;
+      flex:0 0 auto;
+    }
+
+    /* O body do card ocupa o espaço restante e mantém conteúdo alinhado */
+    .game-card__body {
+      flex:1 1 auto;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      padding:12px;
+      align-items:stretch;
+      justify-content:flex-start;
+    }
+
+    /* If content gets too large, allow internal scroll */
+    .game-card__body .scrollable { overflow:auto; }
+
+    /* Controls comuns */
+    .controls { display:flex; gap:8px; justify-content:center; margin-top:12px; }
+    .btn { background:var(--accent); color:#fff; border:0; padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:700; }
+    .btn:disabled { opacity:.6; cursor:default; }
+
+    /* Memory specific (scoped under #mem-board) */
+    #mem-board { display:grid; gap:8px; justify-items:center; }
+    #mem-board .cell{
+      border-radius:8px;
+      background:#56606a;
+      color:transparent;
+      border:0;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      transition:transform .18s, background .18s, color .18s;
+      box-shadow: 0 6px 14px rgba(10,20,40,0.05);
+    }
+    #mem-board .cell.open{ background:#fff; color:#111; transform:scale(1.04) }
+    #mem-board .cell.matched{ background:#dff7e7; color:#0b5132; cursor:default }
+
+    /* Responsivo */
+    @media (max-width:880px){
+      .games-row { gap:14px; }
+      .game-card { max-width:92%; }
+    }
+    @media (max-width:520px){
+      #mem-board .cell{ font-size:22px; }
+    }
+  </style>
+</head>
+<body>
+
+  <h1 style="text-align:center;margin:0 0 18px">Meus Jogos</h1>
+
+  <div class="games-row">
+
+    <!-- Memory (dinâmico compacto) -->
+    <div class="game-card" id="mem-card">
+      <h2>Memory</h2>
+      <div class="game-card__body">
+        <div style="display:flex;gap:12px;justify-content:center;font-weight:700">
+          <div>Nível: <span id="mem-lvl">1</span></div>
+          <div>Movimentos: <span id="mem-moves">0</span></div>
+          <div>Pontuação: <span id="mem-score">0</span></div>
+        </div>
+
+        <div id="mem-board" class="scrollable" aria-live="polite" style="margin-top:10px"></div>
+
+        <div class="controls" style="margin-top:auto">
+          <button id="mem-restart" class="btn">Reiniciar</button>
+          <button id="mem-next" class="btn" disabled>Próximo Nível</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Placeholder para outro jogo -->
+    <div class="game-card" id="game-b">
+      <h2>Jogo B</h2>
+      <div class="game-card__body">
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;color:#425066">
+          <div style="text-align:center;padding:8px">
+            <p style="margin:0 0 8px">Substitua este espaço pelo teu jogo.</p>
+            <button class="btn" onclick="alert('Insere o código do jogo aqui')">Inserir Jogo</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Placeholder para mais um jogo -->
+    <div class="game-card" id="game-c">
+      <h2>Jogo C</h2>
+      <div class="game-card__body">
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;color:#425066">
+          <div style="text-align:center;padding:8px">
+            <p style="margin:0 0 8px">Outro espaço para jogo.</p>
+            <button class="btn" onclick="alert('Cole o jogo aqui')">Inserir</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+  (function(){
+    // Memory — níveis dinâmicos
+    const SYMBOLS = ['🍎','🍋','🍇','🍓','🍉','🍒','🍊','🥝','🍍','🥑','🍑','🍌','🍐','🍈','🥥','🍏','🌽','🥕','🥔','🌶️'];
+    const BASE = [{r:2,c:2},{r:2,c:3},{r:3,c:4},{r:4,c:4},{r:4,c:5}];
+    const MAX_SIZE = 8;
+    function getLevelSpec(index){
+      if(index < BASE.length) return normalize(BASE[index]);
+      const extra = index - BASE.length;
+      const incRows = Math.floor(extra/2);
+      const incCols = extra % 2;
+      let r = 4 + incRows;
+      let c = 5 + incCols + Math.floor(extra/4);
+      r = Math.min(r, MAX_SIZE); c = Math.min(c, MAX_SIZE);
+      return normalize({r,c});
+    }
+    function normalize(spec){
+      let {r,c} = spec;
+      if((r*c) % 2 !== 0){
+        if(c < MAX_SIZE) c++; else if(r < MAX_SIZE) r++; else c++;
+      }
+      return {r,c};
+    }
+    function isMaxLevel(index){ const s=getLevelSpec(index); return s.r>=MAX_SIZE && s.c>=MAX_SIZE; }
+
+    // state
+    let level = 0, rows=4, cols=4, board=[], first=null, second=null, lock=false, moves=0, score=0, matches=0;
+    const boardEl = document.getElementById('mem-board');
+    const movesEl = document.getElementById('mem-moves');
+    const scoreEl = document.getElementById('mem-score');
+    const lvlEl = document.getElementById('mem-lvl');
+    const restartBtn = document.getElementById('mem-restart');
+    const nextBtn = document.getElementById('mem-next');
+
+    function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a; }
+    function getCellSize(){
+      if(window.innerWidth < 420) return 46;
+      if(window.innerWidth < 520) return 54;
+      return 64;
+    }
+
+    function build(){
+      const spec = getLevelSpec(level);
+      rows = spec.r; cols = spec.c;
+      const pairs = (rows*cols)/2;
+      const pool = SYMBOLS.slice(0);
+      shuffle(pool);
+      const chosen = pool.slice(0,pairs);
+      const symbols = shuffle([...chosen, ...chosen]);
+      board = symbols.map((s,i)=>({id:i,symbol:s,matched:false}));
+
+      const cellSize = getCellSize();
+      boardEl.style.gridTemplateColumns = `repeat(${cols}, ${cellSize}px)`;
+      boardEl.style.width = 'max-content';
+      boardEl.style.margin = '0 auto';
+      boardEl.style.gap = '8px';
+
+      boardEl.innerHTML = '';
+      board.forEach(card=>{
+        const btn = document.createElement('button');
+        btn.className = 'cell';
+        btn.dataset.id = card.id;
+        btn.style.width = cellSize + 'px';
+        btn.style.height = cellSize + 'px';
+        btn.style.fontSize = Math.max(16, Math.round(cellSize * 0.45)) + 'px';
+        btn.innerHTML = '<span aria-hidden="true"></span>';
+        btn.addEventListener('click', onClick);
+        boardEl.appendChild(btn);
+      });
+
+      // reset state
+      first = second = null; lock = false; moves = 0; score = 0; matches = 0;
+      movesEl.textContent = moves; scoreEl.textContent = score; lvlEl.textContent = level + 1;
+      nextBtn.disabled = true;
+    }
+
+    function openCard(el, card){
+      el.classList.add('open');
+      el.querySelector('span').textContent = card.symbol;
+      el.setAttribute('aria-pressed','true');
+    }
+    function closeCard(el){
+      el.classList.remove('open');
+      el.querySelector('span').textContent = '';
+      el.setAttribute('aria-pressed','false');
+    }
+
+    function onClick(e){
+      if(lock) return;
+      const el = e.currentTarget;
+      const id = +el.dataset.id;
+      const card = board[id];
+      if(card.matched) return;
+      if(first && first.id === id) return;
+      openCard(el, card);
+      if(!first){ first = {id,el,card}; return; }
+      second = {id,el,card};
+      moves++; movesEl.textContent = moves; lock = true;
+
+      if(first.card.symbol === second.card.symbol){
+        setTimeout(()=>{
+          first.card.matched = second.card.matched = true;
+          first.el.classList.add('matched');
+          second.el.classList.add('matched');
+          matches++; score += 10; scoreEl.textContent = score;
+          first = second = null; lock = false; checkWin();
+        }, 400);
+      } else {
+        setTimeout(()=>{
+          closeCard(first.el); closeCard(second.el);
+          score = Math.max(0, score - 1); scoreEl.textContent = score;
+          first = second = null; lock = false;
+        }, 700);
+      }
+    }
+
+    function checkWin(){
+      const totalPairs = (rows * cols) / 2;
+      if(matches === totalPairs){
+        nextBtn.disabled = isMaxLevel(level);
+        if(!nextBtn.disabled) nextBtn.focus();
+      }
+    }
+
+    restartBtn.addEventListener('click', build);
+    nextBtn.addEventListener('click', ()=>{
+      if(!isMaxLevel(level)){
+        level++; build();
+      }
+    });
+
+    // rebuild on resize to adjust cell size
+    let resizeTimer;
+    window.addEventListener('resize', ()=>{ clearTimeout(resizeTimer); resizeTimer = setTimeout(build, 160); });
+
+    build();
+  })();
+  </script>
+</body>
+</html>     
      
    
 
