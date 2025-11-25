@@ -1,5 +1,65 @@
-
-  <p id="ticmsg" style="font-size:1.2em; text-align:center; margin-top:12px;"></p>
+<div class="card" id="c4">
+  <h2>Connect Four (Quatro em Linha)</h2>
+  <canvas id="c4game" width="350" height="300" style="background:#2980b9; display:block; margin:20px auto; border-radius:20px;"></canvas>
+  <p id="c4msg" style="text-align:center;font-size:1.2em;"></p>
+  <button onclick="restartC4()" class="nav-btn" style="margin-top:10px;">Reiniciar</button>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const COLS = 7, ROWS = 6, SIZE = 42;
+      let grid = Array.from({length:ROWS},()=>Array(COLS).fill(0));
+      let turn = 1, winner = 0;
+      const canvas = document.getElementById("c4game");
+      const ctx = canvas.getContext("2d");
+      function draw() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        for(let r=0;r<ROWS;r++) {
+          for(let c=0;c<COLS;c++) {
+            ctx.beginPath();
+            ctx.arc(c*SIZE+SIZE/2, r*SIZE+SIZE/2, 18, 0, 2*Math.PI);
+            ctx.closePath();
+            ctx.fillStyle = grid[r][c]===1 ? "#f39c12" : grid[r][c]===2 ? "#e74c3c" : "#ecf0f1";
+            ctx.fill();
+          }
+        }
+        document.getElementById("c4msg").textContent = winner ? 
+          (winner===3 ? "Empate!" : `Vencedor: ${winner===1?"Amarelo":"Vermelho"}`) : 
+          `Vez de: ${turn===1?"Amarelo":"Vermelho"}`;
+      }
+      function checkWin() {
+        // Checa conjuntos de 4 em linha
+        for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) {
+          let player = grid[r][c];
+          if(player && (
+            c+3<COLS && player===grid[r][c+1]&&player===grid[r][c+2]&&player===grid[r][c+3] ||
+            r+3<ROWS && player===grid[r+1][c]&&player===grid[r+2][c]&&player===grid[r+3][c] ||
+            c+3<COLS && r+3<ROWS && player===grid[r+1][c+1]&&player===grid[r+2][c+2]&&player===grid[r+3][c+3] ||
+            c-3>=0  && r+3<ROWS && player===grid[r+1][c-1]&&player===grid[r+2][c-2]&&player===grid[r+3][c-3]
+          )) return player;
+        }
+        return grid.flat().every(v=>v) ? 3 : 0; // 3 representa empate
+      }
+      canvas.onclick = function(e) {
+        if(winner) return;
+        const x = Math.floor(e.offsetX/SIZE);
+        if(x<0||x>=COLS) return;
+        let row = -1;
+        for(let r=ROWS-1;r>=0;r--) {
+          if(!grid[r][x]) { row = r; break; }
+        }
+        if(row<0) return;
+        grid[row][x] = turn;
+        winner = checkWin();
+        if(!winner) turn = turn===1 ? 2 : 1;
+        draw();
+      };
+      window.restartC4 = function() {
+        grid = Array.from({length:ROWS},()=>Array(COLS).fill(0));
+        turn = 1; winner = 0; draw();
+      };
+      draw();
+    });
+  </script>
+</div>  <p id="ticmsg" style="font-size:1.2em; text-align:center; margin-top:12px;"></p>
   <button onclick="restartTicTacToe()" class="nav-btn" style="margin-top:10px;">Reiniciar</button>
   <script>
     document.addEventListener("DOMContentLoaded", function() {
