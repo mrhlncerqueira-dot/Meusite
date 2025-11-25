@@ -394,3 +394,84 @@
     });
   </script>
 </div>
+<div class="card" id="snake">
+  <h2>Jogo da Cobrinha (Snake)</h2>
+  <canvas id="snakegame" width="400" height="400" 
+    style="background:#222; border:2px solid #4caf50; display:block; margin:20px auto; border-radius:10px;"></canvas>
+  <p id="snake-score" style="text-align:center; font-size:1.1em;"></p>
+  <button onclick="restartSnake()" class="nav-btn" style="margin-top:10px;">Recomeçar</button>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const canvas = document.getElementById("snakegame");
+      const ctx = canvas.getContext("2d");
+      const size = 20, w = 20, h = 20; // 400/20=20 blocos
+      let snake, direction, food, score, gameOver, nextDir;
+      function start() {
+        snake = [{x:8,y:10},{x:9,y:10},{x:10,y:10}];
+        direction = 'RIGHT';
+        nextDir = direction;
+        placeFood();
+        score = 0; gameOver = false;
+        updateScore();
+      }
+      function draw() {
+        ctx.fillStyle='#222'; ctx.fillRect(0,0,w*size,h*size);
+        // Food
+        ctx.fillStyle='#eb2f06';
+        ctx.fillRect(food.x*size,food.y*size,size,size);
+        // Snake
+        for(let i=0;i<snake.length;i++){
+          ctx.fillStyle= i===0 ? '#f6e58d' : '#7ed6df';
+          ctx.fillRect(snake[i].x*size,snake[i].y*size,size,size);
+        }
+      }
+      function move() {
+        if(gameOver) return;
+        direction = nextDir;
+        let head = {x:snake[0].x, y:snake[0].y};
+        if (direction==='LEFT') head.x--;
+        if (direction==='RIGHT') head.x++;
+        if (direction==='UP') head.y--;
+        if (direction==='DOWN') head.y++;
+        // Wall collision
+        if(head.x<0||head.x>=w||head.y<0||head.y>=h||snake.some(seg=>seg.x===head.x&&seg.y===head.y)){
+          gameOver = true; updateScore(); draw(); return;
+        }
+        snake.unshift(head);
+        // Food
+        if(head.x===food.x && head.y===food.y){
+          score++;
+          placeFood();
+          updateScore();
+        }else{
+          snake.pop();
+        }
+        draw();
+      }
+      function updateScore() {
+        document.getElementById("snake-score").textContent = gameOver ? `Game Over! Pontuação: ${score}` : `Pontuação: ${score}`;
+      }
+      function placeFood() {
+        let x, y;
+        do{
+          x = Math.floor(Math.random()*w);
+          y = Math.floor(Math.random()*h);
+        }while(snake.some(seg=>seg.x===x&&seg.y===y));
+        food = {x,y};
+      }
+      document.addEventListener("keydown",function(e){
+        if(gameOver) return;
+        if(e.key==='ArrowUp' && direction!=='DOWN') nextDir='UP';
+        if(e.key==='ArrowDown' && direction!=='UP') nextDir='DOWN';
+        if(e.key==='ArrowLeft' && direction!=='RIGHT') nextDir='LEFT';
+        if(e.key==='ArrowRight' && direction!=='LEFT') nextDir='RIGHT';
+      });
+      window.restartSnake = function() {
+        start(); draw();
+      };
+      start();
+      draw();
+      setInterval(move, 140);
+    });
+  </script>
+</div>
