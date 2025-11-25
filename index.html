@@ -348,3 +348,135 @@
     });
   </script>
 </div>
+<div class="game-card" id="memory">
+  <h2>Memory Compacto</h2>
+  <div class="info" style="display:flex;gap:12px;justify-content:center;margin-bottom:10px;font-weight:700">
+    <div>Nível: <span id="lvl">1</span></div>
+    <div>Movimentos: <span id="moves">0</span></div>
+    <div>Pontuação: <span id="score">0</span></div>
+  </div>
+
+  <div id="board" aria-live="polite" style="display:grid;gap:8px;justify-items:center;max-width:100%"></div>
+
+  <div class="controls" style="display:flex;gap:8px;justify-content:center;margin-top:12px">
+    <button id="restart" style="background:#3f7bff;color:#fff;border:0;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:700">Reiniciar</button>
+    <button id="next" disabled style="background:#3f7bff;color:#fff;border:0;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:700">Próximo Nível</button>
+  </div>
+
+  <style>
+    /* minimal scoped styles */
+    #memory .cell{
+      border-radius:8px;
+      background:#56606a;
+      color:transparent;
+      border:0;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      transition:transform .18s, background .18s, color .18s;
+      box-shadow: 0 6px 14px rgba(10,20,40,0.05);
+    }
+    #memory .cell.open{ background:#fff; color:#111; transform:scale(1.04) }
+    #memory .cell.matched{ background:#dff7e7; color:#0b5132; cursor:default }
+    @media (max-width:520px){ #memory .cell{ font-size:22px } }
+  </style>
+
+  <script>
+    (function(){
+      const SYMBOLS = ['🍎','🍋','🍇','🍓','🍉','🍒','🍊','🥝','🍍','🥑','🍑','🍌'];
+      const LEVELS = [{r:2,c:2},{r:2,c:3},{r:4,c:4}];
+      let level = 0, rows=4, cols=4, board=[], first=null, second=null, lock=false, moves=0, score=0, matches=0;
+      const boardEl = document.getElementById('board');
+      const movesEl = document.getElementById('moves');
+      const scoreEl = document.getElementById('score');
+      const lvlEl = document.getElementById('lvl');
+      const restartBtn = document.getElementById('restart');
+      const nextBtn = document.getElementById('next');
+
+      function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a }
+
+      function getCellSize(){
+        // responsive cell size (adjust as needed)
+        if(window.innerWidth < 420) return 48;
+        if(window.innerWidth < 520) return 56;
+        return 64;
+      }
+
+      function build(){
+        const lvl = LEVELS[Math.min(level, LEVELS.length-1)];
+        rows = lvl.r; cols = lvl.c;
+        const pairs = (rows*cols)/2;
+        const pool = SYMBOLS.slice(0);
+        shuffle(pool);
+        const symbols = shuffle([ ...pool.slice(0,pairs), ...pool.slice(0,pairs) ]);
+        board = symbols.map((s,i)=>({id:i,symbol:s,matched:false}));
+
+        const cellSize = getCellSize();
+        boardEl.style.gridTemplateColumns = `repeat(${cols}, ${cellSize}px)`;
+        boardEl.style.width = 'max-content';
+        boardEl.style.margin = '0 auto';
+        boardEl.style.gap = '8px';
+
+        boardEl.innerHTML = '';
+        board.forEach(card=>{
+          const btn = document.createElement('button');
+          btn.className = 'cell';
+          btn.dataset.id = card.id;
+          btn.style.width = cellSize + 'px';
+          btn.style.height = cellSize + 'px';
+          btn.style.fontSize = Math.max(18, Math.round(cellSize * 0.45)) + 'px';
+          btn.innerHTML = '<span aria-hidden="true"></span>';
+          btn.addEventListener('click', onClick);
+          boardEl.appendChild(btn);
+        });
+        first = second = null; lock = false; moves = 0; score = 0; matches = 0;
+        movesEl.textContent = moves; scoreEl.textContent = score; lvlEl.textContent = level+1;
+        nextBtn.disabled = true;
+      }
+
+      function onClick(e){
+        if(lock) return;
+        const el = e.currentTarget;
+        const id = +el.dataset.id;
+        const card = board[id];
+        if(card.matched) return;
+        if(first && first.id === id) return;
+        openCard(el,card);
+        if(!first){ first = {id,el,card}; return; }
+        second = {id,el,card};
+        moves++; movesEl.textContent = moves; lock=true;
+        if(first.card.symbol === second.card.symbol){
+          setTimeout(()=>{
+            first.card.matched = second.card.matched = true;
+            first.el.classList.add('matched');
+            second.el.classList.add('matched');
+            matches++; score += 10; scoreEl.textContent = score;
+            first = second = null; lock = false; checkWin();
+          }, 350);
+        } else {
+          setTimeout(()=>{
+            closeCard(first.el); closeCard(second.el);
+            score = Math.max(0, score-1); scoreEl.textContent = score;
+            first = second = null; lock = false;
+          }, 700);
+        }
+      }
+      function openCard(el,card){ el.classList.add('open'); el.querySelector('span').textContent = card.symbol; }
+      function closeCard(el){ el.classList.remove('open'); el.querySelector('span').textContent = ''; }
+      function checkWin(){
+        const totalPairs = (rows*cols)/2;
+        if(matches === totalPairs){ nextBtn.disabled = (level >= LEVELS.length-1); if(!nextBtn.disabled) nextBtn.focus(); }
+      }
+
+      restartBtn.addEventListener('click', build);
+      nextBtn.addEventListener('click', ()=>{ if(level < LEVELS.length-1){ level++; build(); } });
+
+      // adjust layout when resizing to keep cells consistent
+      let resizeTimer;
+      window.addEventListener('resize', ()=>{ clearTimeout(resizeTimer); resizeTimer = setTimeout(build, 180); });
+
+      build();
+    })();
+  </script>
+</div>
