@@ -1,585 +1,19 @@
-<div class="card" id="c4">
-  <h2>Connect Four (Contra o Computador)</h2>
-  <canvas id="c4game" width="350" height="300" style="background:#2980b9; display:block; margin:20px auto; border-radius:20px;"></canvas>
-  <p id="c4msg" style="text-align:center;font-size:1.2em;"></p>
-  <button onclick="restartC4()" class="nav-btn" style="margin-top:10px;">Reiniciar</button>
-  <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      const COLS = 7, ROWS = 6, SIZE = 42;
-      let grid = Array.from({length:ROWS},()=>Array(COLS).fill(0));
-      let turn = 1, winner = 0;
-      const canvas = document.getElementById("c4game");
-      const ctx = canvas.getContext("2d");
-      function draw() {
-        ctx.clearRect(0,0,canvas.width,canvas.height);
-        for(let r=0;r<ROWS;r++) {
-          for(let c=0;c<COLS;c++) {
-            ctx.beginPath();
-            ctx.arc(c*SIZE+SIZE/2, r*SIZE+SIZE/2, 18, 0, 2*Math.PI);
-            ctx.closePath();
-            ctx.fillStyle = grid[r][c]===1 ? "#f39c12" : grid[r][c]===2 ? "#e74c3c" : "#ecf0f1";
-            ctx.fill();
-          }
-        }
-        document.getElementById("c4msg").textContent = winner ? 
-          (winner===3 ? "Empate!" : `Vencedor: ${winner===1?"Jogador":"Computador"}`) : 
-          `Vez de: ${turn===1?"Jogador":"Computador"}`;
-      }
-      function checkWin() {
-        // Checa conjuntos de 4 em linha
-        for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) {
-          let player = grid[r][c];
-          if(player && (
-            c+3<COLS && player===grid[r][c+1]&&player===grid[r][c+2]&&player===grid[r][c+3] ||
-            r+3<ROWS && player===grid[r+1][c]&&player===grid[r+2][c]&&player===grid[r+3][c] ||
-            c+3<COLS && r+3<ROWS && player===grid[r+1][c+1]&&player===grid[r+2][c+2]&&player===grid[r+3][c+3] ||
-            c-3>=0  && r+3<ROWS && player===grid[r+1][c-1]&&player===grid[r+2][c-2]&&player===grid[r+3][c-3]
-          )) return player;
-        }
-        return grid.flat().every(v=>v) ? 3 : 0; // 3 representa empate
-      }
-      function playerMove(col) {
-        if(winner || turn!==1) return;
-        let row = -1;
-        for(let r=ROWS-1;r>=0;r--) {
-          if(!grid[r][col]) { row = r; break; }
-        }
-        if(row<0) return;
-        grid[row][col] = 1;
-        winner = checkWin();
-        draw();
-        if(!winner) {
-          turn = 2;
-          setTimeout(aiMove, 700); // tempo de "pensar" do computador
-        }
-      }
-      function aiMove() {
-        // Simples AI: joga na coluna que pode vencer, ou bloqueia vitória do jogador, ou escolhe aleatório
-        // 1. Verifica jogada vencedora para si mesmo
-        for(let c=0;c<COLS;c++) {
-          let r=findRow(c);
-          if(r!==-1){grid[r][c]=2; if(checkWin()===2){winner=2;draw();return;} grid[r][c]=0;}
-        }
-        // 2. Verifica se pode bloquear vitória do jogador
-        for(let c=0;c<COLS;c++) {
-          let r=findRow(c);
-          if(r!==-1){grid[r][c]=1; if(checkWin()===1){grid[r][c]=2;turn=1;draw();return;} grid[r][c]=0;}
-        }
-        // 3. Joga aleatório
-        let moveCols = [];
-        for(let c=0;c<COLS;c++) {
-          if(findRow(c)!==-1) moveCols.push(c);
-        }
-        if(moveCols.length) {
-          let c = moveCols[Math.floor(Math.random()*moveCols.length)];
-          let r=findRow(c);
-          if(r!==-1){grid[r][c]=2;}
-        }
-        winner = checkWin();
-        turn=1;
-        draw();
-      }
-      function findRow(col){
-        for(let r=ROWS-1;r>=0;r--){
-          if(!grid[r][col]) return r;
-        }
-        return -1;
-      }
-      canvas.onclick = function(e) {
-        if(winner || turn!==1) return;
-        const x = Math.floor(e.offsetX/SIZE);
-        if(x<0||x>=COLS) return;
-        playerMove(x);
-      };
-      window.restartC4 = function() {
-        grid = Array.from({length:ROWS},()=>Array(COLS).fill(0));
-        turn = 1; winner = 0; draw();
-      };
-      draw();
-    });
-  </script>
-</div>  <button onclick="restartTicTacToe()" class="nav-btn" style="margin-top:10px;">Reiniciar</button>
-  <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      let board = ["","","","","","","","",""];
-      let current = "X";
-      let winner = null;
-      const victory = [
-        [0,1,2],[3,4,5],[6,7,8],
-        [0,3,6],[1,4,7],[2,5,8],
-        [0,4,8],[2,4,6]
-      ];
-      function updateBoard() {
-        for(let i=0;i<9;i++) {
-          const cell = document.getElementById("c" + i);
-          cell.textContent = board[i];
-          cell.style.width = cell.style.height = "64px";
-          cell.style.fontSize = "2.4rem";
-          cell.style.textAlign = "center";
-          cell.style.border = "2px solid #555";
-          cell.style.cursor = winner ? "default" : "pointer";
-          cell.style.background = board[i] ? "#ffd6e0" : "#fff";
-        }
-        const msg = document.getElementById("ticmsg");
-        msg.textContent = winner ? (winner==="E" ? "Empate!" : "Vencedor: " + winner) : "Vez de: " + current;
-      }
-      function checkWin() {
-        for(let comb of victory) {
-          let [a,b,c] = comb;
-          if(board[a] && board[a]==board[b] && board[a]==board[c]) return board[a];
-        }
-        return board.includes("") ? null : "E";
-      }
-      function clickCell(i) {
-        if(board[i] || winner) return;
-        board[i] = current;
-        winner = checkWin();
-        if(!winner) current = current=="X" ? "O" : "X";
-        updateBoard();
-      }
-      for(let i=0;i<9;i++)
-        document.getElementById("c"+i).onclick = ()=>clickCell(i);
-      updateBoard();
-      window.restartTicTacToe = function() {
-        board = ["","","","","","","","",""];
-        current = "X";
-        winner = null;
-        updateBoard();
-      }
-    });
-  </script>
-</div>h1 style="color:white;text-align:center;">PONG Arcade</h1>
-<canvas id="pong" width="600" height="400" style="background:#000; border:3px solid #fff; display:block; margin:40px auto;"></canvas>
-<script>
-  document.addEventListener("DOMContentLoaded", function() {
-    const canvas = document.getElementById('pong');
-    const ctx = canvas.getContext('2d');
-    const paddleHeight = 80, paddleWidth = 10;
-    const player = { x: 10, y: canvas.height/2 - paddleHeight/2, dy: 0 };
-    const ai = { x: canvas.width - paddleWidth - 10, y: canvas.height/2 - paddleHeight/2, dy: 0 };
-    const ball = { x: canvas.width/2, y: canvas.height/2, radius: 7, dx: 4, dy: 4 };
-    let playerScore = 0, aiScore = 0;
-    function drawRect(x, y, w, h, color) { ctx.fillStyle = color; ctx.fillRect(x, y, w, h);}
-    function drawCircle(x, y, r, color) { ctx.fillStyle = color; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.closePath(); ctx.fill(); }
-    function drawText(text, x, y, color) { ctx.fillStyle = color; ctx.font = '32px Arial'; ctx.fillText(text, x, y);}
-    function resetBall() { ball.x = canvas.width / 2; ball.y = canvas.height / 2; ball.dx = (Math.random() > 0.5 ? 4 : -4); ball.dy = (Math.random() > 0.5 ? 4 : -4);}
-    function movePaddles() {
-      player.y += player.dy;
-      if (player.y < 0) player.y = 0;
-      if (player.y + paddleHeight > canvas.height) player.y = canvas.height - paddleHeight;
-      if (ball.y < ai.y + paddleHeight/2) ai.y -= 4;
-      else if (ball.y > ai.y + paddleHeight/2) ai.y += 4;
-      if (ai.y < 0) ai.y = 0;
-      if (ai.y + paddleHeight > canvas.height) ai.y = canvas.height - paddleHeight;
-    }
-    function moveBall() {
-      ball.x += ball.dx; ball.y += ball.dy;
-      if (ball.y - ball.radius < 0 || ball.y + ball.radius > canvas.height) { ball.dy *= -1;}
-      let paddle = (ball.x < canvas.width/2) ? player : ai;
-      if (ball.x - ball.radius < paddle.x + paddleWidth && ball.x + ball.radius > paddle.x && ball.y + ball.radius > paddle.y && ball.y - ball.radius < paddle.y + paddleHeight) { ball.dx *= -1.05; ball.dy += (Math.random()-0.5)*2;}
-      if (ball.x - ball.radius < 0) { aiScore++; resetBall();}
-      if (ball.x + ball.radius > canvas.width) { playerScore++; resetBall();}
-    }
-    function draw() {
-      drawRect(0, 0, canvas.width, canvas.height, "#000");
-      drawRect(player.x, player.y, paddleWidth, paddleHeight, "#fff");
-      drawRect(ai.x, ai.y, paddleWidth, paddleHeight, "#fff");
-      drawCircle(ball.x, ball.y, ball.radius, "#fff");
-      drawText(playerScore, canvas.width/4, 50, "#fff");
-      drawText(aiScore, 3*canvas.width/4, 50, "#fff");
-    }
-    function loop() { movePaddles(); moveBall(); draw(); requestAnimationFrame(loop);}
-    document.addEventListener('keydown', function(e) { if (e.key === 'ArrowUp') player.dy = -6; else if (e.key === 'ArrowDown') player.dy = 6; });
-    document.addEventListener('keyup', function(e) { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') player.dy = 0;});
-    resetBall(); loop();
-  });
-</script>
-<div class="card" id="tetris">
-  <h2>Tetris Colorido com Fantasma</h2>
-  <div class="game-inner">
-  <canvas id="tetrisgame" data-cols="10" data-rows="20"
-          style="width:100%; height:100%; display:block; border-radius:10px; background:#111;"></canvas>
-</div>  <p style="text-align:center;">Use as teclas <b>&larr; &rarr; &darr;</b> para mover e <b>&uarr;</b> para rodar</p>
-  <p id="tetris-score" style="text-align:center;font-size:1.2em;"></p>
-  <button onclick="restartTetris()" class="nav-btn" style="margin-top:8px;">Reiniciar</button>
-  <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      const canvas = document.getElementById("tetrisgame");
-      const ctx = canvas.getContext("2d");
-      const COLS = 10, ROWS = 20, SIZE = 30;
-      const COLORS = ["#eee","#00edf3","#ffe81b","#47da1a","#ff5375","#9046cf","#ff884d","#ffec5c"];
-      let board = Array.from({length:ROWS},()=>Array(COLS).fill(0));
-      let score = 0, dropStart = Date.now(), gameOver = false; 
-
-      // Peças e suas cores
-      const pieces = [
-        [[1,1,1,1]], // I
-        [[1,1],[1,1]], // O
-        [[0,2,0],[2,2,2]], // T
-        [[0,0,3],[3,3,3]], // J
-        [[4,0,0],[4,4,4]], // L
-        [[5,5,0],[0,5,5]], // S
-        [[0,6,6],[6,6,0]]  // Z
-      ];
-
-      function randomPiece() {
-        const id = Math.floor(Math.random()*pieces.length);
-        return { shape: pieces[id], col: Math.floor(COLS/2-1), row: 0, color: id+1 }; // color uses id+1
-      }
-
-      let curr = randomPiece();
-
-      function drawSquare(x,y,color) {
-        ctx.fillStyle = COLORS[color];
-        ctx.fillRect(x*SIZE,y*SIZE,SIZE,SIZE);
-        ctx.strokeStyle="#222";
-        ctx.strokeRect(x*SIZE,y*SIZE,SIZE,SIZE);
-      }
-
-      function drawBoard() {
-        ctx.clearRect(0,0,COLS*SIZE,ROWS*SIZE);
-        // Tabuleiro
-        for(let r=0;r<ROWS;r++)
-          for(let c=0;c<COLS;c++)
-            if(board[r][c]) drawSquare(c,r,board[r][c]);
-        // Bloco Fantasma
-        let ghostRow = curr.row;
-        while(validMove(curr.shape,curr.col,ghostRow+1)) ghostRow++;
-        for(let r=0;r<curr.shape.length;r++)
-          for(let c=0;c<curr.shape[r].length;c++)
-            if(curr.shape[r][c])
-              ctx.globalAlpha=0.3, drawSquare(curr.col+c,ghostRow+r,curr.color), ctx.globalAlpha=1.0;
-        // Peça atual
-        for(let r=0;r<curr.shape.length;r++)
-          for(let c=0;c<curr.shape[r].length;c++)
-            if(curr.shape[r][c])
-              drawSquare(curr.col+c,curr.row+r,curr.color);
-      }
-
-      function validMove(shape,col,row) {
-        for(let r=0;r<shape.length;r++){
-          for(let c=0;c<shape[r].length;c++){
-            if(shape[r][c]){
-              let newX = col+c, newY = row+r;
-              if(newX<0 || newX>=COLS || newY>=ROWS) return false;
-              if(newY>=0 && board[newY][newX]) return false;
-            }
-          }
-        }
-        return true;
-      }
-
-      function merge() {
-        for(let r=0;r<curr.shape.length;r++)
-          for(let c=0;c<curr.shape[r].length;c++)
-            if(curr.shape[r][c])
-              board[curr.row+r][curr.col+c]=curr.color;
-      }
-
-      function rotate(shape) {
-        const N = shape.length, res = [];
-        for(let y=0;y<N;y++) res[y]=[];
-        for(let y=0;y<N;y++)
-          for(let x=0;x<N;x++)
-            res[x][N-1-y]=shape[y][x];
-        return res;
-      }
-
-      function clearLines() {
-        let lines = 0;
-        for(let r=ROWS-1;r>=0;r--){
-          if(board[r].every(x=>x)){
-            board.splice(r,1);
-            board.unshift(Array(COLS).fill(0));
-            lines++;
-            r++; // Stay at same line
-          }
-        }
-        if(lines) score+=lines*100;
-      }
-
-      function drop() {
-        if(gameOver) return;
-        if(validMove(curr.shape,curr.col,curr.row+1))
-          curr.row++;
-        else{
-          merge();
-          clearLines();
-          curr = randomPiece();
-          if(!validMove(curr.shape,curr.col,curr.row)){
-            gameOver = true;
-            document.getElementById("tetris-score").textContent = "Game Over! Score: "+score;
-            return;
-          }
-        }
-        drawBoard();
-        document.getElementById("tetris-score").textContent = "Score: "+score;
-      }
-
-      document.addEventListener("keydown",function(e){
-        if(gameOver) return;
-        if(e.key==="ArrowLeft" && validMove(curr.shape,curr.col-1,curr.row)) curr.col--;
-        if(e.key==="ArrowRight" && validMove(curr.shape,curr.col+1,curr.row)) curr.col++;
-        if(e.key==="ArrowDown" && validMove(curr.shape,curr.col,curr.row+1)) curr.row++;
-        if(e.key==="ArrowUp"){
-          let rotated = rotate(curr.shape);
-          if(validMove(rotated,curr.col,curr.row)) curr.shape=rotated;
-        }
-        drawBoard();
-      });
-
-      function loop(){
-        let now = Date.now();
-        if(now-dropStart>400){
-          drop();
-          dropStart = now;
-        }
-        if(!gameOver) requestAnimationFrame(loop);
-      }
-      loop();
-
-      window.restartTetris = function(){
-        board = Array.from({length:ROWS},()=>Array(COLS).fill(0));
-        curr = randomPiece();
-        score = 0; gameOver=false;
-        document.getElementById("tetris-score").textContent="";
-        drawBoard(); dropStart = Date.now(); loop();
-      };
-
-      drawBoard();
-    });
-  </script>
-</div>
-<!doctype html>
-<html lang="pt-BR">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Memory — Níveis Dinâmicos</title>
-<style>
-  body{font-family:system-ui,Arial;background:#f3f7ff;margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
-  .card{background:#fff;padding:16px;border-radius:12px;box-shadow:0 8px 24px rgba(10,20,40,.06);width:min(820px,96vw)}
-  h2{text-align:center;margin:0 0 12px}
-  .info{display:flex;gap:12px;justify-content:center;margin-bottom:10px;font-weight:700}
-  #board{display:grid;gap:8px;justify-items:center}
-  .cell{border-radius:8px;background:#56606a;color:transparent;border:0;font-size:30px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .18s}
-  .cell.open{background:#fff;color:#111;transform:scale(1.04)}
-  .cell.matched{background:#dff7e7;color:#0b5132;cursor:default}
-  .controls{display:flex;gap:8px;justify-content:center;margin-top:12px}
-  button{background:#3f7bff;color:#fff;border:0;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:700}
-  @media (max-width:520px){ .cell{font-size:22px} }
-</style>
-</head>
-  <script>
-(function(){
-  function fitCanvasToContainer(canvas){
-    const dpr = window.devicePixelRatio || 1;
-    const parent = canvas.parentElement || document.body;
-    const rect = parent.getBoundingClientRect();
-    const w = Math.max(40, Math.floor(rect.width));
-    const h = Math.max(40, Math.floor(rect.height));
-    canvas.style.width = w + 'px';
-    canvas.style.height = h + 'px';
-    const rw = Math.floor(w * dpr), rh = Math.floor(h * dpr);
-    if(canvas.width !== rw || canvas.height !== rh){
-      canvas.width = rw; canvas.height = rh;
-      const ctx = canvas.getContext('2d');
-      ctx.setTransform(dpr,0,0,dpr,0,0);
-    }
-  }
-  function adaptAll(){
-    const canvases = document.querySelectorAll('.game-inner canvas, .game-card canvas, canvas');
-    canvases.forEach(c => fitCanvasToContainer(c));
-  }
-  window.addEventListener('resize', () => { clearTimeout(window._fitCanvasTimer); window._fitCanvasTimer = setTimeout(adaptAll,120); });
-  window.addEventListener('load', adaptAll);
-  setTimeout(adaptAll,300);
-})();
-</script><body>
-  <div class="card">
-    <h2>Memory — Níveis Dinâmicos</h2>
-    <div class="info">
-      <div>Nível: <span id="lvl">1</span></div>
-      <div>Movimentos: <span id="moves">0</span></div>
-      <div>Pontuação: <span id="score">0</span></div>
-    </div>
-
-    <div id="board" aria-live="polite"></div>
-
-    <div class="controls">
-      <button id="restart">Reiniciar</button>
-      <button id="next" disabled>Próximo Nível</button>
-    </div>
-  </div>
-
-<script>
-(() => {
-  const SYMBOLS = ['🍎','🍋','🍇','🍓','🍉','🍒','🍊','🥝','🍍','🥑','🍑','🍌','🍐','🍈','🥥','🍏','🌽','🥕','🥔','🌶️'];
-  const MAX_SIZE = 8; // limita linhas/colunas a 8x8
-  // base progression
-  const BASE = [{r:2,c:2},{r:2,c:3},{r:3,c:4},{r:4,c:4},{r:4,c:5}];
-
-  // get dynamic level spec (ensures even number of cells and caps at MAX_SIZE)
-  function getLevelSpec(index){
-    if(index < BASE.length) return normalize(BASE[index]);
-    const extraIndex = index - BASE.length;
-    // grow gradually: alternate increasing cols and rows, starting from 5 cols baseline
-    const incRows = Math.floor(extraIndex / 2); // every two levels increase rows
-    const incCols = extraIndex % 2;             // alternate cols increases
-    let r = 4 + incRows;
-    let c = 5 + incCols + Math.floor(extraIndex / 4); // slow growth of cols
-    r = Math.min(r, MAX_SIZE);
-    c = Math.min(c, MAX_SIZE);
-    return normalize({r,c});
-  }
-  function normalize(spec){
-    // ensure even number of cells; if odd, increase cols if possible else rows
-    let {r,c} = spec;
-    if((r*c) % 2 !== 0){
-      if(c < MAX_SIZE) c++;
-      else if(r < MAX_SIZE) r++;
-      else c++; // fallback (shouldn't exceed reasonable limits)
-    }
-    return {r,c};
-  }
-  function isMaxLevel(index){
-    const s = getLevelSpec(index);
-    return s.r >= MAX_SIZE && s.c >= MAX_SIZE;
-  }
-
-  // state
-  let level = 0;
-  let rows = 4, cols = 4;
-  let board = [], first=null, second=null, lock=false, moves=0, score=0, matches=0;
-
-  // UI
-  const boardEl = document.getElementById('board');
-  const movesEl = document.getElementById('moves');
-  const scoreEl = document.getElementById('score');
-  const lvlEl = document.getElementById('lvl');
-  const restartBtn = document.getElementById('restart');
-  const nextBtn = document.getElementById('next');
-
-  function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a; }
-  function getCellSize(){
-    if(window.innerWidth < 420) return 46;
-    if(window.innerWidth < 520) return 54;
-    return 64;
-  }
-
-  function build(){
-    const spec = getLevelSpec(level);
-    rows = spec.r; cols = spec.c;
-    const pairs = (rows*cols)/2;
-    // pick symbols
-    const pool = SYMBOLS.slice(0);
-    shuffle(pool);
-    const chosen = pool.slice(0, pairs);
-    const symbols = shuffle([...chosen, ...chosen]);
-    board = symbols.map((s,i)=>({id:i,symbol:s,matched:false}));
-
-    // layout fix: fixed cell size to avoid wide spacing
-    const cellSize = getCellSize();
-    boardEl.style.gridTemplateColumns = `repeat(${cols}, ${cellSize}px)`;
-    boardEl.style.width = 'max-content';
-    boardEl.style.margin = '0 auto';
-    boardEl.style.gap = '8px';
-
-    boardEl.innerHTML = '';
-    board.forEach(card => {
-      const btn = document.createElement('button');
-      btn.className = 'cell';
-      btn.dataset.id = card.id;
-      btn.style.width = cellSize + 'px';
-      btn.style.height = cellSize + 'px';
-      btn.style.fontSize = Math.max(16, Math.round(cellSize * 0.45)) + 'px';
-      btn.innerHTML = '<span aria-hidden="true"></span>';
-      btn.addEventListener('click', onClick);
-      boardEl.appendChild(btn);
-    });
-
-    // reset state
-    first = second = null; lock = false; moves = 0; score = 0; matches = 0;
-    movesEl.textContent = moves; scoreEl.textContent = score; lvlEl.textContent = level + 1;
-    nextBtn.disabled = true;
-  }
-
-  function openCard(el, card){ el.classList.add('open'); el.querySelector('span').textContent = card.symbol; el.setAttribute('aria-pressed','true'); }
-  function closeCard(el){ el.classList.remove('open'); el.querySelector('span').textContent = ''; el.setAttribute('aria-pressed','false'); }
-
-  function onClick(e){
-    if(lock) return;
-    const el = e.currentTarget;
-    const id = +el.dataset.id;
-    const card = board[id];
-    if(card.matched) return;
-    if(first && first.id === id) return;
-    openCard(el, card);
-    if(!first){ first = {id, el, card}; return; }
-    second = {id, el, card};
-    moves++; movesEl.textContent = moves; lock = true;
-
-    if(first.card.symbol === second.card.symbol){
-      setTimeout(()=>{
-        first.card.matched = second.card.matched = true;
-        first.el.classList.add('matched');
-        second.el.classList.add('matched');
-        matches++;
-        score += 10;
-        scoreEl.textContent = score;
-        first = second = null; lock = false;
-        checkWin();
-      }, 400);
-    } else {
-      setTimeout(()=>{
-        closeCard(first.el); closeCard(second.el);
-        score = Math.max(0, score - 1);
-        scoreEl.textContent = score;
-        first = second = null; lock = false;
-      }, 700);
-    }
-  }
-
-  function checkWin(){
-    const totalPairs = (rows * cols) / 2;
-    if(matches === totalPairs){
-      // enable next only if there is a larger level available
-      nextBtn.disabled = isMaxLevel(level);
-      if(!nextBtn.disabled) nextBtn.focus();
-    }
-  }
-
-  restartBtn.addEventListener('click', build);
-  nextBtn.addEventListener('click', ()=>{
-    // advance only if next level exists (not max)
-    if(!isMaxLevel(level)){
-      level++;
-      build();
-    }
-  });
-
-  // rebuild on resize to adjust cell size while keeping layout
-  let resizeTimer;
-  window.addEventListener('resize', ()=>{ clearTimeout(resizeTimer); resizeTimer = setTimeout(build, 160); });
-
-  build();
-})();
-</script>
-</body>
-</html>
 <!doctype html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Meus Jogos</title>
+  <title>Meus Jogos — Clean</title>
 
   <style>
     :root{
       --card-bg: #fff;
       --accent: #3f7bff;
       --page-pad: 28px;
+      --page-max: 1200px;
+      --card-w: 360px;
     }
+    /* Page */
     body{
       margin:0;
       font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial;
@@ -587,22 +21,22 @@
       color:#17202a;
       padding:var(--page-pad);
     }
+    h1{ text-align:center; margin:0 0 18px; }
 
-    /* Row que alinha os game-cards horizontalmente (Preset 2: Balanced) */
+    /* Row / Cards (preset 2 - equilibrado) */
     .games-row {
       display:flex;
-      gap:20px;                 /* preset 2 */
+      gap:20px;
       justify-content:center;
-      align-items:stretch;      /* força mesma altura */
+      align-items:stretch;
       flex-wrap:wrap;
-      max-width:1200px;
+      max-width:var(--page-max);
       margin:0 auto;
     }
-
     .game-card {
-      flex:1 1 320px;           /* preset 2: base 320px */
-      max-width:360px;          /* preset 2: max 360px */
-      min-width:260px;
+      flex: 0 0 var(--card-w);
+      width: var(--card-w);
+      min-height: 480px;
       display:flex;
       flex-direction:column;
       background:var(--card-bg);
@@ -610,36 +44,52 @@
       box-shadow: 0 12px 36px rgba(16,24,40,0.06);
       overflow:hidden;
     }
-
     .game-card > h2 {
       margin:12px 8px;
       font-size:1.05rem;
       text-align:center;
       flex:0 0 auto;
     }
-
-    /* O body do card ocupa o espaço restante e mantém conteúdo alinhado */
     .game-card__body {
       flex:1 1 auto;
       display:flex;
       flex-direction:column;
       gap:8px;
       padding:12px;
-      align-items:stretch;
-      justify-content:flex-start;
+      box-sizing:border-box;
     }
 
-    /* If content gets too large, allow internal scroll */
-    .game-card__body .scrollable { overflow:auto; }
+    /* game-inner limita conteúdo (canvas/boards) */
+    .game-inner {
+      flex:1 1 auto;
+      width:100%;
+      max-height:360px;
+      min-height:180px;
+      overflow:hidden;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:6px;
+      box-sizing:border-box;
+    }
+    .game-inner canvas,
+    .game-inner img,
+    .game-inner .board {
+      max-width:100%;
+      max-height:100%;
+      width:auto !important;
+      height:auto !important;
+      display:block;
+      object-fit:contain;
+    }
 
-    /* Controls comuns */
+    /* Controls */
     .controls { display:flex; gap:8px; justify-content:center; margin-top:12px; }
     .btn { background:var(--accent); color:#fff; border:0; padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:700; }
     .btn:disabled { opacity:.6; cursor:default; }
 
-    /* Memory specific (scoped under #mem-board) */
-    #mem-board { display:grid; gap:8px; justify-items:center; }
-    #mem-board .cell{
+    /* Memory cards */
+    .cell{
       border-radius:8px;
       background:#56606a;
       color:transparent;
@@ -651,28 +101,47 @@
       transition:transform .18s, background .18s, color .18s;
       box-shadow: 0 6px 14px rgba(10,20,40,0.05);
     }
-    #mem-board .cell.open{ background:#fff; color:#111; transform:scale(1.04) }
-    #mem-board .cell.matched{ background:#dff7e7; color:#0b5132; cursor:default }
+    .cell.open{ background:#fff; color:#111; transform:scale(1.04) }
+    .cell.matched{ background:#dff7e7; color:#0b5132; cursor:default }
 
-    /* Responsivo */
+    /* Small screens */
     @media (max-width:880px){
       .games-row { gap:14px; }
-      .game-card { max-width:92%; }
-    }
-    @media (max-width:520px){
-      #mem-board .cell{ font-size:22px; }
+      .game-card { flex:1 1 92%; width:auto; min-height:auto; }
+      .game-inner { max-height:420px; }
     }
   </style>
 </head>
 <body>
-
-  <h1 style="text-align:center;margin:0 0 18px">Meus Jogos</h1>
+  <h1>Meus Jogos</h1>
 
   <div class="games-row">
 
-    <!-- Memory (dinâmico compacto) -->
+    <!-- TETRIS CARD -->
+    <div class="game-card" id="tetris-card">
+      <h2>Tetris (exemplo responsivo)</h2>
+      <div class="game-card__body">
+        <div style="display:flex;gap:12px;justify-content:center;font-weight:700">
+          <div>Pontos: <span id="tetris-score">0</span></div>
+          <div>Nível: <span id="tetris-level">1</span></div>
+        </div>
+
+        <div class="game-inner">
+          <!-- canvas sem width/height fixos: helper redimensiona -->
+          <canvas id="tetrisgame" data-cols="10" data-rows="20"
+                  style="width:100%; height:100%; display:block; border-radius:10px; background:#111;"></canvas>
+        </div>
+
+        <div class="controls" style="margin-top:auto">
+          <button id="tetris-restart" class="btn">Reiniciar</button>
+          <button id="tetris-pause" class="btn">Pausar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEMORY CARD -->
     <div class="game-card" id="mem-card">
-      <h2>Memory</h2>
+      <h2>Memory — Níveis Dinâmicos</h2>
       <div class="game-card__body">
         <div style="display:flex;gap:12px;justify-content:center;font-weight:700">
           <div>Nível: <span id="mem-lvl">1</span></div>
@@ -680,7 +149,9 @@
           <div>Pontuação: <span id="mem-score">0</span></div>
         </div>
 
-        <div id="mem-board" class="scrollable" aria-live="polite" style="margin-top:10px"></div>
+        <div class="game-inner">
+          <div id="mem-board" aria-live="polite" style="margin-top:10px"></div>
+        </div>
 
         <div class="controls" style="margin-top:auto">
           <button id="mem-restart" class="btn">Reiniciar</button>
@@ -689,55 +160,134 @@
       </div>
     </div>
 
-    <!-- Placeholder para outro jogo -->
-    <div class="game-card" id="game-b">
-      <h2>Jogo B</h2>
+    <!-- PLACEHOLDER CARD -->
+    <div class="game-card" id="placeholder-card">
+      <h2>Outro Jogo</h2>
       <div class="game-card__body">
-        <div style="flex:1;display:flex;align-items:center;justify-content:center;color:#425066">
-          <div style="text-align:center;padding:8px">
-            <p style="margin:0 0 8px">Substitua este espaço pelo teu jogo.</p>
-            <button class="btn" onclick="alert('Insere o código do jogo aqui')">Inserir Jogo</button>
+        <div class="game-inner" style="color:#425066;text-align:center;padding:12px">
+          <div>
+            <p style="margin:0 0 8px">Substitua este bloco pelo teu jogo.</p>
+            <button class="btn" onclick="alert('Cole o teu jogo aqui')">Inserir Jogo</button>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Placeholder para mais um jogo -->
-    <div class="game-card" id="game-c">
-      <h2>Jogo C</h2>
-      <div class="game-card__body">
-        <div style="flex:1;display:flex;align-items:center;justify-content:center;color:#425066">
-          <div style="text-align:center;padding:8px">
-            <p style="margin:0 0 8px">Outro espaço para jogo.</p>
-            <button class="btn" onclick="alert('Cole o jogo aqui')">Inserir</button>
-          </div>
+        <div class="controls" style="margin-top:auto">
+          <button class="btn" onclick="alert('Sem ação')">Ação</button>
         </div>
       </div>
     </div>
 
   </div>
 
+  <!-- SCRIPTS: TETRIS HELPER + MEMORY -->
   <script>
+  /* ---------------- TETRIS: helper responsivo (fit + DPR) ---------------- */
   (function(){
-    // Memory — níveis dinâmicos
+    const canvas = document.getElementById('tetrisgame');
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const COLS = parseInt(canvas.dataset.cols,10) || 10;
+    const ROWS = parseInt(canvas.dataset.rows,10) || 20;
+
+    function fitCanvasToContainer() {
+      const dpr = window.devicePixelRatio || 1;
+      const wrapper = canvas.closest('.game-inner') || canvas.parentElement || document.body;
+      const rect = wrapper.getBoundingClientRect();
+      const displayW = Math.max(40, Math.floor(rect.width));
+      const displayH = Math.max(40, Math.floor(rect.height));
+      canvas.style.width = displayW + 'px';
+      canvas.style.height = displayH + 'px';
+      const resW = Math.floor(displayW * dpr);
+      const resH = Math.floor(displayH * dpr);
+      if (canvas.width !== resW || canvas.height !== resH) {
+        canvas.width = resW;
+        canvas.height = resH;
+        ctx.setTransform(dpr,0,0,dpr,0,0);
+        return true;
+      }
+      return false;
+    }
+    function computeCellSize() {
+      const cssW = canvas.clientWidth, cssH = canvas.clientHeight;
+      const cellW = Math.floor(cssW / COLS), cellH = Math.floor(cssH / ROWS);
+      return Math.max(4, Math.min(cellW, cellH));
+    }
+    function computeOffsets(cell) {
+      const cssW = canvas.clientWidth, cssH = canvas.clientHeight;
+      const gridW = cell * COLS, gridH = cell * ROWS;
+      return { offsetX: Math.floor((cssW - gridW)/2), offsetY: Math.floor((cssH - gridH)/2) };
+    }
+
+    // Expor helper para o jogo (se quiseres integrar o teu loop)
+    window.tetrisCanvasHelper = { canvas, ctx, COLS, ROWS, fitCanvasToContainer, computeCellSize, computeOffsets };
+
+    // exemplo de desenho simples (fallback). Substitui pela tua lógica.
+    function redrawExample(){
+      const cell = computeCellSize();
+      const { offsetX, offsetY } = computeOffsets(cell);
+      // fundo
+      ctx.fillStyle = '#0b0b0b';
+      ctx.fillRect(0,0,canvas.clientWidth,canvas.clientHeight);
+      // grid de células vazias
+      for(let r=0;r<ROWS;r++){
+        for(let c=0;c<COLS;c++){
+          const x = offsetX + c*cell, y = offsetY + r*cell;
+          ctx.fillStyle = '#222';
+          ctx.fillRect(x + 2, y + 2, cell - 4, cell - 4);
+          ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+          ctx.strokeRect(x + 2.5, y + 2.5, cell - 5, cell - 5);
+        }
+      }
+      // bloco de exemplo
+      ctx.fillStyle = '#ff6b6b';
+      ctx.fillRect(offsetX + 4*cell + 2, offsetY + 0*cell + 2, cell - 4, cell - 4);
+    }
+
+    // resize handler (debounced) e init
+    let resizeTimer;
+    function onResize(){
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(()=>{
+        fitCanvasToContainer();
+        // se tens um loop, chama a tua função de redraw aí; caso contrário usamos o exemplo
+        if (typeof window.tetrisDraw === 'function') {
+          try { window.tetrisDraw(ctx, window.tetrisCanvasHelper); }
+          catch(e){ console.error('tetrisDraw error', e); redrawExample(); }
+        } else {
+          redrawExample();
+        }
+      }, 80);
+    }
+    window.addEventListener('resize', onResize);
+    window.addEventListener('load', () => { fitCanvasToContainer(); onResize(); });
+    setTimeout(()=>{ fitCanvasToContainer(); onResize(); }, 200);
+
+    // botões (ligação simples)
+    const btnRestart = document.getElementById('tetris-restart');
+    const btnPause = document.getElementById('tetris-pause');
+    if(btnRestart) btnRestart.addEventListener('click', ()=>{ if(typeof window.tetrisRestart === 'function') window.tetrisRestart(); fitCanvasToContainer(); onResize(); });
+    if(btnPause) btnPause.addEventListener('click', ()=>{ if(typeof window.tetrisTogglePause === 'function') window.tetrisTogglePause(); });
+  })();
+  </script>
+
+  <script>
+  /* ---------------- MEMORY: níveis dinâmicos (compacto) ---------------- */
+  (function(){
     const SYMBOLS = ['🍎','🍋','🍇','🍓','🍉','🍒','🍊','🥝','🍍','🥑','🍑','🍌','🍐','🍈','🥥','🍏','🌽','🥕','🥔','🌶️'];
     const BASE = [{r:2,c:2},{r:2,c:3},{r:3,c:4},{r:4,c:4},{r:4,c:5}];
     const MAX_SIZE = 8;
-    function getLevelSpec(index){
-      if(index < BASE.length) return normalize(BASE[index]);
-      const extra = index - BASE.length;
+    function getLevelSpec(i){
+      if(i < BASE.length) return normalize(BASE[i]);
+      const extra = i - BASE.length;
       const incRows = Math.floor(extra/2);
       const incCols = extra % 2;
-      let r = 4 + incRows;
-      let c = 5 + incCols + Math.floor(extra/4);
+      let r = 4 + incRows, c = 5 + incCols + Math.floor(extra/4);
       r = Math.min(r, MAX_SIZE); c = Math.min(c, MAX_SIZE);
       return normalize({r,c});
     }
     function normalize(spec){
       let {r,c} = spec;
-      if((r*c) % 2 !== 0){
-        if(c < MAX_SIZE) c++; else if(r < MAX_SIZE) r++; else c++;
-      }
+      if((r*c)%2!==0){ if(c<MAX_SIZE) c++; else if(r<MAX_SIZE) r++; else c++; }
       return {r,c};
     }
     function isMaxLevel(index){ const s=getLevelSpec(index); return s.r>=MAX_SIZE && s.c>=MAX_SIZE; }
@@ -752,11 +302,7 @@
     const nextBtn = document.getElementById('mem-next');
 
     function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a; }
-    function getCellSize(){
-      if(window.innerWidth < 420) return 46;
-      if(window.innerWidth < 520) return 54;
-      return 64;
-    }
+    function getCellSize(){ if(window.innerWidth < 420) return 46; if(window.innerWidth < 520) return 54; return 64; }
 
     function build(){
       const spec = getLevelSpec(level);
@@ -787,23 +333,13 @@
         boardEl.appendChild(btn);
       });
 
-      // reset state
       first = second = null; lock = false; moves = 0; score = 0; matches = 0;
       movesEl.textContent = moves; scoreEl.textContent = score; lvlEl.textContent = level + 1;
       nextBtn.disabled = true;
     }
 
-    function openCard(el, card){
-      el.classList.add('open');
-      el.querySelector('span').textContent = card.symbol;
-      el.setAttribute('aria-pressed','true');
-    }
-    function closeCard(el){
-      el.classList.remove('open');
-      el.querySelector('span').textContent = '';
-      el.setAttribute('aria-pressed','false');
-    }
-
+    function openCard(el,card){ el.classList.add('open'); el.querySelector('span').textContent = card.symbol; }
+    function closeCard(el){ el.classList.remove('open'); el.querySelector('span').textContent = ''; }
     function onClick(e){
       if(lock) return;
       const el = e.currentTarget;
@@ -811,11 +347,10 @@
       const card = board[id];
       if(card.matched) return;
       if(first && first.id === id) return;
-      openCard(el, card);
+      openCard(el,card);
       if(!first){ first = {id,el,card}; return; }
       second = {id,el,card};
       moves++; movesEl.textContent = moves; lock = true;
-
       if(first.card.symbol === second.card.symbol){
         setTimeout(()=>{
           first.card.matched = second.card.matched = true;
@@ -823,7 +358,7 @@
           second.el.classList.add('matched');
           matches++; score += 10; scoreEl.textContent = score;
           first = second = null; lock = false; checkWin();
-        }, 400);
+        }, 350);
       } else {
         setTimeout(()=>{
           closeCard(first.el); closeCard(second.el);
@@ -832,31 +367,24 @@
         }, 700);
       }
     }
-
     function checkWin(){
-      const totalPairs = (rows * cols) / 2;
+      const totalPairs = (rows*cols)/2;
       if(matches === totalPairs){
         nextBtn.disabled = isMaxLevel(level);
         if(!nextBtn.disabled) nextBtn.focus();
       }
     }
-
     restartBtn.addEventListener('click', build);
-    nextBtn.addEventListener('click', ()=>{
-      if(!isMaxLevel(level)){
-        level++; build();
-      }
-    });
-
-    // rebuild on resize to adjust cell size
+    nextBtn.addEventListener('click', ()=>{ if(level < 999){ level++; build(); } });
     let resizeTimer;
-    window.addEventListener('resize', ()=>{ clearTimeout(resizeTimer); resizeTimer = setTimeout(build, 160); });
-
+    window.addEventListener('resize', ()=>{ clearTimeout(resizeTimer); resizeTimer = setTimeout(build, 180); });
     build();
   })();
   </script>
-</body>
-</html>     
-     
-   
 
+  <!-- Optional: small note / safety -->
+  <!-- Se tiveres um Tetris JS separado, substitui a função window.tetrisDraw(ctx, helper) pela tua rotina de desenho,
+       e chama window.tetrisCanvasHelper.fitCanvasToContainer() no init/resize do teu jogo. -->
+
+</body>
+</html>
