@@ -196,8 +196,10 @@
 </script>
 <div class="card" id="tetris">
   <h2>Tetris Colorido com Fantasma</h2>
-  <canvas id="tetrisgame" width="300" height="600" style="background:#111; display:block; margin:20px auto; border-radius:10px;"></canvas>
-  <p style="text-align:center;">Use as teclas <b>&larr; &rarr; &darr;</b> para mover e <b>&uarr;</b> para rodar</p>
+  <div class="game-inner">
+  <canvas id="tetrisgame" data-cols="10" data-rows="20"
+          style="width:100%; height:100%; display:block; border-radius:10px; background:#111;"></canvas>
+</div>  <p style="text-align:center;">Use as teclas <b>&larr; &rarr; &darr;</b> para mover e <b>&uarr;</b> para rodar</p>
   <p id="tetris-score" style="text-align:center;font-size:1.2em;"></p>
   <button onclick="restartTetris()" class="nav-btn" style="margin-top:8px;">Reiniciar</button>
   <script>
@@ -368,7 +370,32 @@
   @media (max-width:520px){ .cell{font-size:22px} }
 </style>
 </head>
-<body>
+  <script>
+(function(){
+  function fitCanvasToContainer(canvas){
+    const dpr = window.devicePixelRatio || 1;
+    const parent = canvas.parentElement || document.body;
+    const rect = parent.getBoundingClientRect();
+    const w = Math.max(40, Math.floor(rect.width));
+    const h = Math.max(40, Math.floor(rect.height));
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    const rw = Math.floor(w * dpr), rh = Math.floor(h * dpr);
+    if(canvas.width !== rw || canvas.height !== rh){
+      canvas.width = rw; canvas.height = rh;
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+    }
+  }
+  function adaptAll(){
+    const canvases = document.querySelectorAll('.game-inner canvas, .game-card canvas, canvas');
+    canvases.forEach(c => fitCanvasToContainer(c));
+  }
+  window.addEventListener('resize', () => { clearTimeout(window._fitCanvasTimer); window._fitCanvasTimer = setTimeout(adaptAll,120); });
+  window.addEventListener('load', adaptAll);
+  setTimeout(adaptAll,300);
+})();
+</script><body>
   <div class="card">
     <h2>Memory — Níveis Dinâmicos</h2>
     <div class="info">
