@@ -348,3 +348,49 @@
     });
   </script>
 </div>
+<div class="card" id="jogo21">
+  <h2>Jogo do 21 contra o Computador</h2>
+  <p id="p21-display" style="font-size:1.2em; text-align:center;"></p>
+  <div style="text-align:center;">
+    <button onclick="player21Move(1)" class="nav-btn">Retirar 1 pedra</button>
+    <button onclick="player21Move(2)" class="nav-btn">Retirar 2 pedras</button>
+    <button onclick="player21Move(3)" class="nav-btn">Retirar 3 pedras</button>
+  </div>
+  <button onclick="restart21()" class="nav-btn" style="margin:14px auto; display:block;">Recomeçar</button>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      let stones = 21, turn = 1, gameOver = false;
+      const display = document.getElementById("p21-display");
+      function show() {
+        display.textContent = gameOver
+          ? (turn === 1 ? "Você perdeu! 😢" : "Computador perdeu! Você venceu! 🎉")
+          : `Restam ${stones} pedras. Vez de ${turn===1?"você":"computador"}.`;
+      }
+      window.player21Move = function(n) {
+        if(gameOver || turn!==1) return;
+        if(n<1||n>3||n>stones) return;
+        stones -= n;
+        if(stones === 0) { gameOver = true; show(); return; }
+        turn = 2; show();
+        setTimeout(computerMove, 800);
+      }
+      function computerMove() {
+        if(gameOver || turn!==2) return;
+        // Estratégia: faz múltiplos de 4
+        let compTake = stones % 4;
+        if(compTake === 0) compTake = Math.min(3, stones);
+        if(compTake === 0) compTake = 1; // Se só resta 1, tira 1
+        stones -= compTake;
+        display.textContent = `Computador retirou ${compTake} pedra${compTake>1?'s':''}. Restam ${stones} pedras.`;
+        setTimeout(function(){
+          if(stones === 0) { gameOver = true; turn = 1; show(); return; }
+          turn = 1; show();
+        }, 1200);
+      }
+      window.restart21 = function() {
+        stones = 21; turn = 1; gameOver = false; show();
+      }
+      show();
+    });
+  </script>
+</div>
