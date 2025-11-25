@@ -348,8 +348,198 @@
     });
   </script>
 </div>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Memory — Níveis Dinâmicos</title>
+<style>
+  body{font-family:system-ui,Arial;background:#f3f7ff;margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
+  .card{background:#fff;padding:16px;border-radius:12px;box-shadow:0 8px 24px rgba(10,20,40,.06);width:min(820px,96vw)}
+  h2{text-align:center;margin:0 0 12px}
+  .info{display:flex;gap:12px;justify-content:center;margin-bottom:10px;font-weight:700}
+  #board{display:grid;gap:8px;justify-items:center}
+  .cell{border-radius:8px;background:#56606a;color:transparent;border:0;font-size:30px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .18s}
+  .cell.open{background:#fff;color:#111;transform:scale(1.04)}
+  .cell.matched{background:#dff7e7;color:#0b5132;cursor:default}
+  .controls{display:flex;gap:8px;justify-content:center;margin-top:12px}
+  button{background:#3f7bff;color:#fff;border:0;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:700}
+  @media (max-width:520px){ .cell{font-size:22px} }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h2>Memory — Níveis Dinâmicos</h2>
+    <div class="info">
+      <div>Nível: <span id="lvl">1</span></div>
+      <div>Movimentos: <span id="moves">0</span></div>
+      <div>Pontuação: <span id="score">0</span></div>
+    </div>
 
+    <div id="board" aria-live="polite"></div>
 
+    <div class="controls">
+      <button id="restart">Reiniciar</button>
+      <button id="next" disabled>Próximo Nível</button>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const SYMBOLS = ['🍎','🍋','🍇','🍓','🍉','🍒','🍊','🥝','🍍','🥑','🍑','🍌','🍐','🍈','🥥','🍏','🌽','🥕','🥔','🌶️'];
+  const MAX_SIZE = 8; // limita linhas/colunas a 8x8
+  // base progression
+  const BASE = [{r:2,c:2},{r:2,c:3},{r:3,c:4},{r:4,c:4},{r:4,c:5}];
+
+  // get dynamic level spec (ensures even number of cells and caps at MAX_SIZE)
+  function getLevelSpec(index){
+    if(index < BASE.length) return normalize(BASE[index]);
+    const extraIndex = index - BASE.length;
+    // grow gradually: alternate increasing cols and rows, starting from 5 cols baseline
+    const incRows = Math.floor(extraIndex / 2); // every two levels increase rows
+    const incCols = extraIndex % 2;             // alternate cols increases
+    let r = 4 + incRows;
+    let c = 5 + incCols + Math.floor(extraIndex / 4); // slow growth of cols
+    r = Math.min(r, MAX_SIZE);
+    c = Math.min(c, MAX_SIZE);
+    return normalize({r,c});
+  }
+  function normalize(spec){
+    // ensure even number of cells; if odd, increase cols if possible else rows
+    let {r,c} = spec;
+    if((r*c) % 2 !== 0){
+      if(c < MAX_SIZE) c++;
+      else if(r < MAX_SIZE) r++;
+      else c++; // fallback (shouldn't exceed reasonable limits)
+    }
+    return {r,c};
+  }
+  function isMaxLevel(index){
+    const s = getLevelSpec(index);
+    return s.r >= MAX_SIZE && s.c >= MAX_SIZE;
+  }
+
+  // state
+  let level = 0;
+  let rows = 4, cols = 4;
+  let board = [], first=null, second=null, lock=false, moves=0, score=0, matches=0;
+
+  // UI
+  const boardEl = document.getElementById('board');
+  const movesEl = document.getElementById('moves');
+  const scoreEl = document.getElementById('score');
+  const lvlEl = document.getElementById('lvl');
+  const restartBtn = document.getElementById('restart');
+  const nextBtn = document.getElementById('next');
+
+  function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a; }
+  function getCellSize(){
+    if(window.innerWidth < 420) return 46;
+    if(window.innerWidth < 520) return 54;
+    return 64;
+  }
+
+  function build(){
+    const spec = getLevelSpec(level);
+    rows = spec.r; cols = spec.c;
+    const pairs = (rows*cols)/2;
+    // pick symbols
+    const pool = SYMBOLS.slice(0);
+    shuffle(pool);
+    const chosen = pool.slice(0, pairs);
+    const symbols = shuffle([...chosen, ...chosen]);
+    board = symbols.map((s,i)=>({id:i,symbol:s,matched:false}));
+
+    // layout fix: fixed cell size to avoid wide spacing
+    const cellSize = getCellSize();
+    boardEl.style.gridTemplateColumns = `repeat(${cols}, ${cellSize}px)`;
+    boardEl.style.width = 'max-content';
+    boardEl.style.margin = '0 auto';
+    boardEl.style.gap = '8px';
+
+    boardEl.innerHTML = '';
+    board.forEach(card => {
+      const btn = document.createElement('button');
+      btn.className = 'cell';
+      btn.dataset.id = card.id;
+      btn.style.width = cellSize + 'px';
+      btn.style.height = cellSize + 'px';
+      btn.style.fontSize = Math.max(16, Math.round(cellSize * 0.45)) + 'px';
+      btn.innerHTML = '<span aria-hidden="true"></span>';
+      btn.addEventListener('click', onClick);
+      boardEl.appendChild(btn);
+    });
+
+    // reset state
+    first = second = null; lock = false; moves = 0; score = 0; matches = 0;
+    movesEl.textContent = moves; scoreEl.textContent = score; lvlEl.textContent = level + 1;
+    nextBtn.disabled = true;
+  }
+
+  function openCard(el, card){ el.classList.add('open'); el.querySelector('span').textContent = card.symbol; el.setAttribute('aria-pressed','true'); }
+  function closeCard(el){ el.classList.remove('open'); el.querySelector('span').textContent = ''; el.setAttribute('aria-pressed','false'); }
+
+  function onClick(e){
+    if(lock) return;
+    const el = e.currentTarget;
+    const id = +el.dataset.id;
+    const card = board[id];
+    if(card.matched) return;
+    if(first && first.id === id) return;
+    openCard(el, card);
+    if(!first){ first = {id, el, card}; return; }
+    second = {id, el, card};
+    moves++; movesEl.textContent = moves; lock = true;
+
+    if(first.card.symbol === second.card.symbol){
+      setTimeout(()=>{
+        first.card.matched = second.card.matched = true;
+        first.el.classList.add('matched');
+        second.el.classList.add('matched');
+        matches++;
+        score += 10;
+        scoreEl.textContent = score;
+        first = second = null; lock = false;
+        checkWin();
+      }, 400);
+    } else {
+      setTimeout(()=>{
+        closeCard(first.el); closeCard(second.el);
+        score = Math.max(0, score - 1);
+        scoreEl.textContent = score;
+        first = second = null; lock = false;
+      }, 700);
+    }
+  }
+
+  function checkWin(){
+    const totalPairs = (rows * cols) / 2;
+    if(matches === totalPairs){
+      // enable next only if there is a larger level available
+      nextBtn.disabled = isMaxLevel(level);
+      if(!nextBtn.disabled) nextBtn.focus();
+    }
+  }
+
+  restartBtn.addEventListener('click', build);
+  nextBtn.addEventListener('click', ()=>{
+    // advance only if next level exists (not max)
+    if(!isMaxLevel(level)){
+      level++;
+      build();
+    }
+  });
+
+  // rebuild on resize to adjust cell size while keeping layout
+  let resizeTimer;
+  window.addEventListener('resize', ()=>{ clearTimeout(resizeTimer); resizeTimer = setTimeout(build, 160); });
+
+  build();
+})();
+</script>
+</body>
+</html>
 
      
      
