@@ -1,4 +1,66 @@
-<h1 style="color:white;text-align:center;">PONG Arcade</h1>
+<div class="card" id="tic">
+  <h2>Três em Linha</h2>
+  <div id="ticgame" style="display:inline-block; background:#f2f2f2; padding:15px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.10); margin:20px auto;">
+    <table style="border-collapse:collapse; margin:auto;">
+      <tbody>
+        <tr><td id="c0"></td><td id="c1"></td><td id="c2"></td></tr>
+        <tr><td id="c3"></td><td id="c4"></td><td id="c5"></td></tr>
+        <tr><td id="c6"></td><td id="c7"></td><td id="c8"></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p id="ticmsg" style="font-size:1.2em; text-align:center; margin-top:12px;"></p>
+  <button onclick="restartTicTacToe()" class="nav-btn" style="margin-top:10px;">Reiniciar</button>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      let board = ["","","","","","","","",""];
+      let current = "X";
+      let winner = null;
+      const victory = [
+        [0,1,2],[3,4,5],[6,7,8],
+        [0,3,6],[1,4,7],[2,5,8],
+        [0,4,8],[2,4,6]
+      ];
+      function updateBoard() {
+        for(let i=0;i<9;i++) {
+          const cell = document.getElementById("c" + i);
+          cell.textContent = board[i];
+          cell.style.width = cell.style.height = "64px";
+          cell.style.fontSize = "2.4rem";
+          cell.style.textAlign = "center";
+          cell.style.border = "2px solid #555";
+          cell.style.cursor = winner ? "default" : "pointer";
+          cell.style.background = board[i] ? "#ffd6e0" : "#fff";
+        }
+        const msg = document.getElementById("ticmsg");
+        msg.textContent = winner ? (winner==="E" ? "Empate!" : "Vencedor: " + winner) : "Vez de: " + current;
+      }
+      function checkWin() {
+        for(let comb of victory) {
+          let [a,b,c] = comb;
+          if(board[a] && board[a]==board[b] && board[a]==board[c]) return board[a];
+        }
+        return board.includes("") ? null : "E";
+      }
+      function clickCell(i) {
+        if(board[i] || winner) return;
+        board[i] = current;
+        winner = checkWin();
+        if(!winner) current = current=="X" ? "O" : "X";
+        updateBoard();
+      }
+      for(let i=0;i<9;i++)
+        document.getElementById("c"+i).onclick = ()=>clickCell(i);
+      updateBoard();
+      window.restartTicTacToe = function() {
+        board = ["","","","","","","","",""];
+        current = "X";
+        winner = null;
+        updateBoard();
+      }
+    });
+  </script>
+</div>h1 style="color:white;text-align:center;">PONG Arcade</h1>
 <canvas id="pong" width="600" height="400" style="background:#000; border:3px solid #fff; display:block; margin:40px auto;"></canvas>
 <script>
   document.addEventListener("DOMContentLoaded", function() {
