@@ -1,1 +1,428 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Casual Games — Coleção</title>
+  <meta name="description" content="Coleção colorida de jogos casuais: quizzes, puzzles e memory." />
+  <style>
+    :root{
+      --bg1: #ffecd2;
+      --bg2: #fcb69f;
+      --card:#ffffff;
+      --accent1:#ff6b6b;
+      --accent2:#ffd166;
+      --accent3:#7be5a7;
+      --accent4:#9b5cff;
+      --muted:#4a5568;
+      --maxw:1100px;
+      --radius:14px;
+    }
+    *{box-sizing:border-box}
+    body{ margin:0; font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial; background:linear-gradient(135deg,var(--bg1),var(--bg2)); color:#07122a; -webkit-font-smoothing:antialiased; }
+    .wrap{ max-width:var(--maxw); margin:28px auto; padding:18px; }
+    header{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; }
+    .brand{ display:flex; gap:12px; align-items:center; text-decoration:none; color:inherit; }
+    .logo{ width:52px; height:52px; background:linear-gradient(135deg,var(--accent1),var(--accent4)); border-radius:12px; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:900; font-size:18px; box-shadow:0 8px 20px rgba(15,23,42,0.12); }
+    nav a{ text-decoration:none; color:rgba(7,18,42,0.75); margin-left:12px; font-weight:700; }
+    .hero{ background:rgba(255,255,255,0.85); border-radius:var(--radius); padding:22px; display:flex; gap:22px; align-items:center; box-shadow:0 12px 30px rgba(10,20,40,0.06); }
+    .hero h1{ margin:0; font-size:1.5rem; color:#0b1b2b; }
+    .hero p{ margin:8px 0 0; color:var(--muted); }
+    .actions a{ display:inline-block; margin-right:8px; padding:10px 14px; border-radius:10px; color:#fff; text-decoration:none; font-weight:800; }
+    .actions .primary{ background:linear-gradient(90deg,var(--accent1),var(--accent3)); }
+    .grid{ margin-top:18px; display:grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap:16px; }
+    .card{ background:var(--card); border-radius:12px; padding:14px; box-shadow:0 10px 26px rgba(8,18,40,0.06); display:flex; flex-direction:column; min-height:160px; transition:transform .15s ease, box-shadow .15s ease; }
+    .card:hover{ transform:translateY(-6px); box-shadow:0 18px 40px rgba(8,18,40,0.09); }
+    .card h3{ margin:0 0 8px; font-size:1.05rem; color:#082233; }
+    .card p{ margin:0 0 12px; color:var(--muted); flex:1 1 auto; }
+    .card .open{ text-decoration:none; padding:8px 12px; border-radius:10px; color:#082233; font-weight:800; background:linear-gradient(90deg,var(--accent2),#fff); box-shadow:0 6px 18px rgba(12,20,40,0.06); }
+    footer{ margin-top:22px; padding:12px; text-align:center; color:var(--muted); font-size:13px; }
+    @media (max-width:720px){
+      header{ flex-direction:column; align-items:flex-start; gap:10px; }
+      .hero{ flex-direction:column; align-items:flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a class="brand" href="./">
+        <div class="logo">CG</div>
+        <div>
+          <div style="font-weight:900">Casual Games</div>
+          <div style="font-size:13px;color:var(--muted)">Puzzles, quizzes e mini‑desafios — tema vibrante</div>
+        </div>
+      </a>
+      <nav>
+        <a href="./">Início</a>
+        <a href="./about.html">Sobre</a>
+        <a href="./contact.html">Contacto</a>
+      </nav>
+    </header>
 
+    <section class="hero" role="region" aria-label="Introdução">
+      <div style="flex:1">
+        <h1>Jogos rápidos para treinar a mente</h1>
+        <p>Cada jogo abre numa página dedicada para carregar rápido. Escolhe um, diverte‑te e desafia amigos.</p>
+        <div class="actions" style="margin-top:12px">
+          <a class="primary" href="./games/quiz.html">Começar Quiz</a>
+          <a style="background:linear-gradient(90deg,var(--accent4),var(--accent2)); color:#fff; padding:10px 14px; border-radius:10px; font-weight:800; text-decoration:none;" href="#games">Explorar jogos</a>
+        </div>
+      </div>
+      <div style="width:160px; text-align:center; color:var(--muted)">
+        <svg width="120" height="120" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="4" width="40" height="40" rx="10" fill="#fff3e6" />
+          <circle cx="24" cy="20" r="8" fill="#ff6b6b" />
+          <rect x="18" y="31" width="12" height="3" rx="1.5" fill="#ffd166"/>
+        </svg>
+        <div style="font-size:12px;margin-top:6px">Tema vibrante</div>
+      </div>
+    </section>
+
+    <main id="games">
+      <h2 style="margin-top:18px;margin-bottom:8px">Jogos disponíveis</h2>
+      <div class="grid">
+        <article class="card">
+          <h3>Quiz rápido</h3>
+          <p>Perguntas de cultura geral: responde e soma pontos. Bom para partidas rápidas.</p>
+          <a class="open" href="./games/quiz.html">Jogar Quiz</a>
+        </article>
+
+        <article class="card">
+          <h3>Memory</h3>
+          <p>Jogo da memória com níveis: combina pares e vence o tabuleiro.</p>
+          <a class="open" href="./games/memory.html">Jogar Memory</a>
+        </article>
+
+        <article class="card">
+          <h3>Puzzle — Sequência</h3>
+          <p>Completa a sequência lógica. Ótimo para treino de raciocínio e padrões.</p>
+          <a class="open" href="./games/puzzle.html">Resolver Puzzle</a>
+        </article>
+
+        <article class="card">
+          <h3>Em breve</h3>
+          <p>Mais jogos virão — se gostares deste layout eu gero novos desafios e adiciono aqui.</p>
+          <a class="open" href="./games/">Ver mais</a>
+        </article>
+      </div>
+    </main>
+
+    <footer>
+      © <span id="year"></span> — Site gerado por ti. Posso empacotar isto num ZIP para upload ou guiar no deploy no GitHub Pages.
+    </footer>
+  </div>
+
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>
+```
+
+
+```html name=games/quiz.html
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Quiz — Casual Games</title>
+  <style>
+    :root{ --accent:#ff6b6b; --bg:#fff7f2; --muted:#475569; }
+    body{ margin:0;font-family:Inter,system-ui, -apple-system, "Segoe UI", Roboto, Arial;background:var(--bg); color:#07122a; -webkit-font-smoothing:antialiased; }
+    .wrap{ max-width:760px;margin:28px auto;padding:18px; }
+    header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+    a.back{ text-decoration:none; color:var(--muted); font-weight:700; }
+    .card{ background:#fff;border-radius:12px;padding:18px; box-shadow:0 12px 30px rgba(8,20,40,0.06); }
+    h1{ margin:0 0 6px; font-size:1.25rem; }
+    .question{ font-weight:700; margin:10px 0 8px; }
+    .choices{ display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
+    .choice{ padding:10px 12px; border-radius:10px; background:#fff3f0; border:1px solid rgba(255,107,107,0.14); cursor:pointer; font-weight:700; }
+    .choice.correct{ background:#dff7e7; border-color:#7be5a7; color:#073b2f; }
+    .choice.wrong{ background:#ffdede; border-color:#ff9b9b; color:#581515; }
+    .controls{ display:flex; gap:8px; margin-top:8px; }
+    button{ background:var(--accent); color:#fff; padding:8px 12px; border-radius:10px; border:0; font-weight:800; cursor:pointer; }
+    .score{ margin-top:12px; font-weight:800; color:var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a class="back" href="../index.html">← Voltar</a>
+      <div style="font-weight:800;color:var(--muted)">Quiz rápido</div>
+    </header>
+
+    <section class="card" id="app">
+      <div id="intro">
+        <h1>Quiz — Pontos rápidos</h1>
+        <p style="color:var(--muted)">Responde às perguntas. Pontuação +1 por resposta certa. Bons treinos!</p>
+        <div style="margin-top:12px;">
+          <button id="startBtn">Começar</button>
+        </div>
+      </div>
+
+      <div id="quiz" style="display:none">
+        <div class="question" id="qtext"></div>
+        <div class="choices" id="choices"></div>
+        <div class="controls">
+          <button id="nextBtn">Próxima</button>
+          <button id="restartBtn" style="background:#9b5cff">Reiniciar</button>
+        </div>
+        <div class="score" id="score">Score: 0</div>
+      </div>
+    </section>
+  </div>
+
+<script>
+(function(){
+  const data = [
+    {q:"Qual é a capital de Portugal?", choices:["Porto","Lisboa","Coimbra","Faro"], a:1},
+    {q:"2 + 2 × 2 = ?", choices:["8","6","4","2"], a:1},
+    {q:"Qual é a cor complementar do azul (simplificado)?", choices:["Verde","Laranja","Amarelo","Roxo"], a:1},
+    {q:"Quem escreveu 'Os Lusíadas'?", choices:["Eça de Queirós","Fernando Pessoa","Luís de Camões","Camilo Castelo Branco"], a:2}
+  ];
+  let idx=0, score=0, answered=false;
+  const startBtn = document.getElementById('startBtn'), intro=document.getElementById('intro');
+  const quiz = document.getElementById('quiz'), qtext=document.getElementById('qtext'), choicesEl=document.getElementById('choices');
+  const nextBtn=document.getElementById('nextBtn'), restartBtn=document.getElementById('restartBtn'), scoreEl=document.getElementById('score');
+
+  function render(){
+    const item = data[idx];
+    qtext.textContent = `Pergunta ${idx+1} de ${data.length}: ${item.q}`;
+    choicesEl.innerHTML = '';
+    item.choices.forEach((c,i)=>{
+      const b = document.createElement('button');
+      b.className = 'choice';
+      b.textContent = c;
+      b.onclick = ()=>select(i,b);
+      choicesEl.appendChild(b);
+    });
+    answered=false;
+    scoreEl.textContent = `Score: ${score}`;
+  }
+
+  function select(i,el){
+    if(answered) return;
+    answered=true;
+    const correct = data[idx].a;
+    const buttons = Array.from(choicesEl.children);
+    buttons.forEach((btn, j)=>{
+      if(j===correct) btn.classList.add('correct');
+      if(j===i && j!==correct) btn.classList.add('wrong');
+      btn.disabled = true;
+    });
+    if(i===correct) score++;
+    scoreEl.textContent = `Score: ${score}`;
+  }
+
+  nextBtn.addEventListener('click', ()=>{
+    if(!answered) { alert('Escolhe uma resposta primeiro.'); return; }
+    idx++;
+    if(idx >= data.length){ alert('Fim do quiz! Pontuação: ' + score); idx=0; score=0; intro.style.display='block'; quiz.style.display='none'; }
+    else render();
+  });
+  restartBtn.addEventListener('click', ()=>{ idx=0; score=0; render(); });
+  startBtn.addEventListener('click', ()=>{ intro.style.display='none'; quiz.style.display='block'; idx=0; score=0; render(); });
+})();
+</script>
+</body>
+</html>
+```
+
+
+```html name=games/memory.html
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Memory — Casual Games</title>
+  <style>
+    :root{ --accent:#ffd166; --bg:#fffaf3; --muted:#475569; }
+    body{ margin:0;font-family:Inter,system-ui, -apple-system, "Segoe UI", Roboto, Arial;background:var(--bg); color:#07122a; -webkit-font-smoothing:antialiased; }
+    .wrap{ max-width:720px;margin:28px auto;padding:18px; }
+    header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+    .card{ background:#fff;border-radius:12px;padding:16px; box-shadow:0 12px 30px rgba(8,20,40,0.06); }
+    #board{ display:grid; gap:10px; justify-content:center; margin-top:12px; }
+    .cell{ width:72px; height:72px; border-radius:10px; background:#56606a; color:transparent; display:flex; align-items:center; justify-content:center; font-size:28px; cursor:pointer; box-shadow:0 8px 18px rgba(6,12,20,0.06); }
+    .cell.open{ background:#fff; color:#07122a; transform:scale(1.03); }
+    .cell.matched{ background:#dff7e7; color:#0b5132; cursor:default; }
+    .controls{ display:flex; gap:8px; margin-top:12px; justify-content:center; }
+    button{ background:var(--accent); color:#07122a; padding:8px 12px; border-radius:10px; border:0; font-weight:800; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a href="../index.html" style="text-decoration:none;color:#475569;font-weight:700">← Voltar</a>
+      <div style="font-weight:800;color:#475569">Memory</div>
+    </header>
+
+    <section class="card">
+      <div style="display:flex;gap:12px;justify-content:center;font-weight:700"><div>Nível: <span id="lvl">1</span></div><div>Mov.: <span id="moves">0</span></div><div>Pontos: <span id="score">0</span></div></div>
+      <div id="board"></div>
+      <div class="controls"><button id="restart">Reiniciar</button><button id="next" disabled>Próximo Nível</button></div>
+    </section>
+  </div>
+
+<script>
+(function(){
+  const SYMBOLS = ['🍎','🍋','🍇','🍓','🍉','🍒','🍊','🥝','🍍','🥑','🍑','🍌','🍐','🍈'];
+  const boardEl = document.getElementById('board'), movesEl=document.getElementById('moves'), scoreEl=document.getElementById('score'), lvlEl=document.getElementById('lvl');
+  const restartBtn = document.getElementById('restart'), nextBtn = document.getElementById('next');
+  let level=0, rows=4, cols=4, board=[], first=null, second=null, lock=false, moves=0, score=0, matches=0;
+
+  function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a; }
+  function buildGrid(){
+    const pairs = (rows*cols)/2;
+    const pool = shuffle(SYMBOLS.slice());
+    const chosen = pool.slice(0,pairs);
+    const arr = shuffle([...chosen,...chosen]);
+    board = arr.map((s,i)=>({id:i,symbol:s,matched:false}));
+    const cellSize = Math.max(56, Math.floor((document.querySelector('.card').clientWidth - 40)/cols));
+    boardEl.style.gridTemplateColumns = `repeat(${cols}, ${cellSize}px)`;
+    boardEl.innerHTML='';
+    board.forEach(c=>{
+      const b=document.createElement('button');
+      b.className='cell';
+      b.dataset.id=c.id;
+      b.style.width=cellSize+'px'; b.style.height=cellSize+'px';
+      b.innerHTML='<span></span>';
+      b.addEventListener('click', onClick);
+      boardEl.appendChild(b);
+    });
+  }
+
+  function startLevel(){
+    const sizes=[{r:2,c:2},{r:2,c:3},{r:3,c:4},{r:4,c:4}];
+    const spec = level < sizes.length ? sizes[level] : {r:4,c:5};
+    rows = spec.r; cols = spec.c;
+    buildGrid(); first=second=null; lock=false; moves=0; matches=0;
+    movesEl.textContent = moves; scoreEl.textContent = score; lvlEl.textContent = level+1;
+    nextBtn.disabled = true;
+  }
+
+  function openCard(el,card){ el.classList.add('open'); el.querySelector('span').textContent = card.symbol; }
+  function closeCard(el){ el.classList.remove('open'); el.querySelector('span').textContent = ''; }
+
+  function onClick(e){
+    if(lock) return;
+    const el = e.currentTarget; const id = +el.dataset.id; const card = board[id];
+    if(card.matched) return; if(first && first.id===id) return;
+    openCard(el,card);
+    if(!first){ first={id,el,card}; return; }
+    second={id,el,card}; moves++; movesEl.textContent = moves; lock=true;
+    if(first.card.symbol === second.card.symbol){
+      setTimeout(()=>{ first.card.matched = second.card.matched = true; first.el.classList.add('matched'); second.el.classList.add('matched'); matches++; score+=10; scoreEl.textContent = score; first=second=null; lock=false; checkWin(); }, 300);
+    } else {
+      setTimeout(()=>{ closeCard(first.el); closeCard(second.el); score=Math.max(0,score-1); scoreEl.textContent = score; first=second=null; lock=false; }, 700);
+    }
+  }
+
+  function checkWin(){ if(matches === (rows*cols)/2){ nextBtn.disabled = false; } }
+
+  restartBtn.addEventListener('click', ()=>{ level=0; score=0; startLevel(); });
+  nextBtn.addEventListener('click', ()=>{ level++; startLevel(); });
+  window.addEventListener('resize', ()=>{ setTimeout(()=>buildGrid(),120); });
+  startLevel();
+})();
+</script>
+</body>
+</html>
+```
+
+
+```html name=games/puzzle.html
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Sequência — Puzzle</title>
+  <style>
+    :root{ --accent:#9b5cff; --bg:#fffafc; --muted:#475569; }
+    body{ margin:0;font-family:Inter,system-ui, -apple-system, "Segoe UI", Roboto, Arial;background:var(--bg); color:#07122a; -webkit-font-smoothing:antialiased; }
+    .wrap{ max-width:700px;margin:28px auto;padding:18px; }
+    header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+    .card{ background:#fff;border-radius:12px;padding:18px; box-shadow:0 12px 30px rgba(8,20,40,0.06); }
+    .task{ font-weight:800; margin-bottom:12px; }
+    .options{ display:flex; gap:10px; flex-wrap:wrap; }
+    .opt{ padding:12px 14px; background:linear-gradient(90deg,#fff,#f6f0ff); border-radius:10px; border:1px solid rgba(155,92,255,0.12); cursor:pointer; font-weight:800; }
+    .opt.correct{ background:#dff7e7; border-color:#7be5a7; color:#073b2f; }
+    .opt.wrong{ background:#ffdede; border-color:#ff9b9b; color:#581515; }
+    button{ margin-top:12px; background:var(--accent); color:#fff; padding:8px 12px; border-radius:10px; border:0; cursor:pointer; font-weight:800; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a href="../index.html" style="text-decoration:none;color:var(--muted);font-weight:700">← Voltar</a>
+      <div style="font-weight:800;color:var(--muted)">Sequência — Puzzle</div>
+    </header>
+
+    <section class="card">
+      <div class="task" id="task">Qual é o próximo número da sequência: 2, 4, 8, 16, ?</div>
+      <div class="options" id="opts"></div>
+      <button id="next">Novo Desafio</button>
+    </section>
+  </div>
+
+<script>
+(function(){
+  const tasks = [
+    {q:'2, 4, 8, 16, ?', opts:[24,32,18,20], a:1},
+    {q:'1, 1, 2, 3, 5, ?', opts:[8,7,6,9], a:0},
+    {q:'3, 6, 11, 18, 27, ?', opts:[36,38,35,40], a:0},
+    {q:'10, 7, 4, 1, -2, ?', opts:[-5,-3,-4,-6], a:0}
+  ];
+  let idx=0;
+  const taskEl=document.getElementById('task'), optsEl=document.getElementById('opts'), nextBtn=document.getElementById('next');
+
+  function render(){
+    const t = tasks[idx];
+    taskEl.textContent = 'Qual é o próximo número da sequência: ' + t.q;
+    optsEl.innerHTML='';
+    t.opts.forEach((o,i)=>{
+      const b = document.createElement('button');
+      b.className='opt'; b.textContent = o;
+      b.addEventListener('click', ()=>choose(i,b));
+      optsEl.appendChild(b);
+    });
+  }
+  function choose(i,el){
+    const t = tasks[idx];
+    const buttons = Array.from(optsEl.children);
+    buttons.forEach((btn,j)=>{ btn.disabled=true; if(j===t.a) btn.classList.add('correct'); if(j===i && j!==t.a) btn.classList.add('wrong'); });
+  }
+  nextBtn.addEventListener('click', ()=>{ idx = (idx+1) % tasks.length; render(); });
+  render();
+})();
+</script>
+</body>
+</html>
+```
+
+````markdown name=README.md
+# Casual Games — Projeto
+
+Este repositório contém um site de jogos casuais (tema vibrante) com páginas individuais para cada jogo.
+
+Estrutura sugerida:
+- index.html — página principal (links para jogos)
+- games/
+  - quiz.html
+  - memory.html
+  - puzzle.html
+
+Como publicar (GitHub Pages — sem terminal)
+1. Cria o repositório (ou abre o existente).
+2. Faz upload do `index.html` para a raiz e da pasta `games/` com os ficheiros `.html`.
+   - No GitHub: Add file → Upload files → arrasta os ficheiros/pasta.
+3. Vai a Settings → Pages → escolhe a branch `main` e a pasta `/ (root)` → Save.
+4. Acede ao URL: `https://<teu-user>.github.io/<repo>/`
+
+Quer que eu:
+- A) Empacote estes ficheiros num ZIP (texto pronto para criar localmente), ou
+- B) Te guie passo a passo para fazer upload no GitHub Web (eu digo cada clique)?
+
+Responde A ou B e eu prossigo.
+```
